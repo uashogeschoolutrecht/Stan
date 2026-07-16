@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Universal workspace hygiene
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.idea/
