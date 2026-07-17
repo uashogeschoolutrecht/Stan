@@ -3,7 +3,7 @@ Strategy Assistant for the Data Science Pool.
 
 ## What it is
 
-The Data Science Pool is a team of data scientists and engineers that support the Microsoft Security business. The team has quarterly strategy sessions to plan and prioritize work for the next quarter. Stan is an AI agent that helps the team prepare for these sessions by providing input based on data in Azure DevOps, and it also helps summarize and incorporate the outputs of the sessions into a knowledge base for future reference.
+The Data Science Pool is a team of data scientists and engineers that support employees of the HU University of Applied Sciences. The team has quarterly strategy sessions to plan and prioritize work for the next quarter. Stan is an AI agent that helps the team prepare for these sessions by providing input based on data in Azure DevOps, and it also helps summarize and incorporate the outputs of the sessions into a knowledge base for future reference.
 
 ![Stan overview diagram](docs/stan_v0.1.png)
 
