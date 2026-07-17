@@ -126,25 +126,31 @@ Respond with valid JSON only — no markdown fences around it:
 
 
 def get_existing_bot_comments() -> list[dict]:
-    """Return all PR comments posted by this action (identified by COMMENT_MARKER).
-
-    Each item is a GitHub API comment object containing at least 'id' and 'body'.
-    Returns an empty list if the request fails or no matching comments exist.
-    """
+    """Return all PR comments posted by this action (identified by COMMENT_MARKER)."""
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
     }
     url = f"https://api.github.com/repos/{REPO}/issues/{PR_NUMBER}/comments"
-    params = {"per_page": 100}
-    try:
-        resp = requests.get(url, headers=headers, params=params, timeout=30)
-        if resp.status_code == 200:
-            return [c for c in resp.json() if COMMENT_MARKER in c.get("body", "")]
-    except requests.RequestException:
-        pass
-    return []
 
+    matches: list[dict] = []
+    page = 1
+    while True:
+        try:
+            resp = requests.get(
+                url, headers=headers, params={"per_page": 100, "page": page}, timeout=30
+            )
+        except requests.RequestException:
+            break
+        if resp.status_code != 200:
+            break
+        batch = resp.json()
+        if not batch:
+            break
+        matches.extend([c for c in batch if COMMENT_MARKER in c.get("body", "")])
+        page += 1
+
+    return matches
 
 def delete_comment(comment_id: int) -> None:
     headers = {
