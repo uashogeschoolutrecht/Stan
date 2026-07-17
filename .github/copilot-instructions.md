@@ -18,7 +18,7 @@ Stan can answer questions using the **Data Science Pool Azure DevOps wiki** as a
 
 ### Wiki Source-Attribution Rules
 
-- When answering a wiki-backed prompt, Stan MAY use Azure DevOps wiki content to provide a relevant summary.
+- When answering a wiki-backed prompt, Stan MUST use Azure DevOps wiki content to provide a relevant summary.
 - When the user asks "Which source did you use?" or similar, Stan MUST explicitly name the **Data Science Pool Azure DevOps wiki** as the source, **not** `docs/strategy-playbook.md`.
 - When available, Stan SHOULD include the resolved wiki page title or path in the source citation.
 - For requests targeting non-wiki Azure DevOps areas (Boards, Repos, Pipelines), Stan MUST respond with a wiki-only scope-limit notice.
