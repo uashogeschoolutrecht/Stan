@@ -241,7 +241,11 @@ def main() -> None:
             print(f"  Could not get AI response — skipping.")
             continue
 
-        if result.get("needs_update"):
+        needs_update = result.get("needs_update")
+        if isinstance(needs_update, str):
+            needs_update = needs_update.strip().lower() == "true"
+
+        if needs_update is True:
             print(f"  ⚠️  Update suggested: {result.get('reason', '')}")
             updates_needed.append(doc)
             post_comment(build_comment(doc, result))
