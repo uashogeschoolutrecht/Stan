@@ -1,199 +1,126 @@
-# DevOps Wiki Access
+# DevOps Wiki Access (MCP Server)
 
 ## Purpose
 
-Describe how Stan can read Azure DevOps wiki data at runtime for wiki-backed answers.
+Describe how Stan reads Azure DevOps wiki content at runtime through the Azure DevOps MCP Server.
 
 ## Scope
 
-- Read-only access to Azure DevOps wiki content.
-- No write/update operations.
+- Read-only access to Azure DevOps wiki content via MCP Server tools.
+- No write/update operations (`wiki_upsert_page` MCP tool is excluded).
 - No Boards/Repos/Pipelines access as part of this capability.
 
-## Required Configuration
+## Transport Mechanism
 
-Set these values before runtime checks or integration tests:
+Wiki content is retrieved through the **Azure DevOps MCP Server**, configured in `.vscode/mcp.json` with the `wiki` domain loaded. The MCP Server replaces the previous REST API-based wiki read path — no fallback or dual-path is retained.
 
-- Azure DevOps organization URL
-- Project name
-- Wiki name
-- PAT secret in environment variable `AZURE_DEVOPS_PAT`
+## VS Code Setup
 
-Example values used in validation:
+1. Install the Azure DevOps MCP Server / MCP extension support in VS Code if it is not already available in your environment.
+2. Create `.vscode/mcp.json` at the repository root.
+3. Add one of the server configurations below.
+4. Save the file and open the VS Code MCP view.
+5. Enable or start the configured Azure DevOps MCP connection.
+6. Confirm the connection shows as connected and that the `wiki` domain/tools are available before testing Stan.
 
-- Org: `https://dev.azure.com/HogeschoolUtrecht/`
-- Project: `Data Science Pool`
-- Wiki: `Data-Science-Pool.wiki`
+If the connection does not appear automatically after saving `mcp.json`, reload the VS Code window and reopen the MCP view.
 
-## Authentication
+Two deployment modes are supported:
 
-- Auth method: PAT via Basic auth header.
-- Secret handling: PAT is stored in `.env` locally as `AZURE_DEVOPS_PAT`.
-- Runtime loading pattern: load `AZURE_DEVOPS_PAT` into process environment.
+### Remote MCP Server (recommended)
 
-## API Access Pattern
+The Remote (HTTP) MCP Server is the recommended path. It eliminates the Node.js/npx dependency, uses streamable HTTP transport, and authenticates through VS Code's sign-in context.
 
-Stan wiki-read behavior uses Azure DevOps Wiki REST APIs:
-
-1. Resolve wiki by org/project.
-2. Retrieve page metadata and optionally content by path or page id.
-3. Map outcomes to contract statuses:
-   - `success`
-   - `not_found`
-   - `no_content`
-   - `unavailable`
-   - `access_denied`
-
-## API Response Reference
-
-Concrete response shapes from the Azure DevOps Wiki REST API. These let Stan predict response structure without trial-and-error.
-
-### Endpoint: List wikis
-
-```
-GET {org}/{project}/_apis/wiki/wikis?api-version=7.0
-```
+**Configuration** (`.vscode/mcp.json`):
 
 ```json
 {
-  "value": [
-    {
-      "id": "e9cd3348-dc0c-4cf9-8921-ae2d0d7a2d78",
-      "name": "Data-Science-Pool.wiki",
-      "type": "projectWiki",
-      "projectId": "63c0199a-9442-4f4e-9679-e983b253b63c",
-      "repositoryId": "e9cd3348-dc0c-4cf9-8921-ae2d0d7a2d78",
-      "mappedPath": "/"
+  "servers": {
+    "ado-remote-mcp": {
+      "url": "https://mcp.dev.azure.com/HogeschoolUtrecht",
+      "type": "http"
     }
-  ],
-  "count": 1
+  }
 }
 ```
 
-Key fields: `id` (wiki GUID for subsequent calls), `name`, `type` (`projectWiki`).
+**Auth**: VS Code OAuth — transparent, no PAT management needed.
 
-### Endpoint: Get single page (by path, no content)
+**Turn on the connection**:
 
-```
-GET {org}/{project}/_apis/wiki/wikis/{wikiId}/pages?path=/&api-version=7.0
-```
+1. Save `.vscode/mcp.json`.
+2. Open the MCP view in VS Code.
+3. Select `ado-remote-mcp`.
+4. Start or enable the connection.
+5. Complete the VS Code sign-in flow if prompted.
+
+### Local MCP Server (alternative)
+
+The Local (stdio) MCP Server is available when remote is unavailable or a specific stdio setup is required.
+
+**Configuration** (`.vscode/mcp.json`):
 
 ```json
 {
-  "path": "/",
-  "order": 0,
-  "isParentPage": true,
-  "gitItemPath": "/",
-  "subPages": [
-    {
-      "path": "/Handbook",
-      "order": 2147483647,
-      "isParentPage": true,
-      "gitItemPath": "/Handbook",
-      "subPages": [],
-      "url": "https://...",
-      "remoteUrl": "https://..."
+  "servers": {
+    "ado": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "HogeschoolUtrecht", "-d", "core", "wiki"]
     }
-  ],
-  "url": "https://...",
-  "remoteUrl": "https://...",
-  "content": ""
+  }
 }
 ```
 
-Without `includeContent=true`, `content` is always `""` and sub-pages are shallow (no nested children).
+**Auth**: PAT via `AZURE_DEVOPS_PAT` environment variable, using `--authentication pat` flag.
 
-### Endpoint: Get page WITH content
+**Turn on the connection**:
 
-```
-GET {org}/{project}/_apis/wiki/wikis/{wikiId}/pages?path=/Handbook/Communication+strategy&includeContent=true&api-version=7.0
-```
+1. Ensure `AZURE_DEVOPS_PAT` is available in the environment used by VS Code.
+2. Save `.vscode/mcp.json`.
+3. Open the MCP view in VS Code.
+4. Select `ado`.
+5. Start or enable the connection.
+6. Confirm the `core` and `wiki` domains load successfully.
 
-```json
-{
-  "path": "/Handbook/Communication strategy",
-  "order": 1,
-  "isParentPage": false,
-  "gitItemPath": "/Handbook/Communication strategy.md",
-  "subPages": [],
-  "url": "https://dev.azure.com/...",
-  "remoteUrl": "https://...",
-  "content": "# Communication strategy\n\n## Purpose\n\nThis page describes how the Data Science Pool communicates...\n\n## Channels\n\n- Teams: ...\n- Email: ...\n\n*(Full markdown body returned in this field)*"
-}
-```
+## Domain Filtering
 
-With `includeContent=true`, `content` contains the full markdown body. `isParentPage=false` means no children.
+The MCP configuration uses `-d core,wiki` to load only the tool domains Stan needs. This reduces context overhead:
+- `core` — essential base tools
+- `wiki` — wiki read and search tools
 
-### Endpoint: Get page by page ID
+## MCP Wiki Tools
 
-```
-GET {org}/{project}/_apis/wiki/wikis/{wikiId}/pages/{pageId}?includeContent=true&api-version=7.0
-```
+| MCP Tool | Action | Purpose |
+|---|---|---|
+| `wiki` | `list_wikis` | List all wikis in an org/project |
+| `wiki` | `get_wiki` | Get wiki details (by ID or name) |
+| `wiki` | `list_pages` | List pages in a wiki hierarchy |
+| `wiki` | `get_page` | Get wiki page metadata (path, title, without content body) |
+| `wiki` | `get_page_content` | Retrieve full wiki page content body |
+| `mcp_ado_search_wiki` | — | Search wiki pages by keyword |
 
-Response shape is identical to path-based lookup. Useful when the page ID is known from a prior response (e.g., from `subPages` navigation).
+## Access Pattern
 
-### Endpoint: Recursive page tree
+Stan wiki-read behavior uses the MCP tool chain:
 
-```
-GET {org}/{project}/_apis/wiki/wikis/{wikiId}/pages?path=/&recursive=true&includeContent=true&api-version=7.0
-```
+1. Discover wiki(s) using `wiki list_wikis` or `wiki get_wiki`.
+2. List pages using `wiki list_pages` to resolve topic-to-page mappings.
+3. Retrieve page content using `wiki get_page` + `wiki get_page_content` for known paths.
+4. Search using `mcp_ado_search_wiki` for topic-based queries.
 
-When `recursive=true`, the full page tree is returned as nested `subPages` arrays with `content` populated on every node. This enables a single-call crawl of all wiki pages.
+## Outcome Mapping
 
-### Not-found response
+MCP tool results map to contract outcomes:
 
-```
-Status: 404 Not Found
-```
+| MCP Behavior | Contract Outcome |
+|---|---|
+| Tool returns page content successfully | `success` |
+| Tool returns empty/no result for page/topic | `not_found` |
+| Tool returns page metadata but empty content | `no_content` |
+| MCP Server connection error / timeout | `unavailable` |
+| MCP Server returns authorization error | `access_denied` |
 
-When the requested page path or ID does not exist, the API returns **HTTP 404** with no JSON body. There is no `not_found` status in the response envelope — detection is purely via HTTP status code.
+## Behavior Contract
 
-### No-content scenario
-
-Some pages return `content: ""` even with `includeContent=true` (e.g., parent/index pages with no markdown body but with `subPages` children). Treat this as `no_content` — the page exists but has no readable content.
-
-### Recursive crawl pattern
-
-Use this PowerShell pattern to discover all content-rich pages:
-
-```powershell
-function Get-WikiPages($path) {
-    $url = "{org}/{project}/_apis/wiki/wikis/{wikiId}/pages" +
-           "?path=$([System.Uri]::EscapeDataString($path))" +
-           "&includeContent=true&api-version=7.0"
-    $page = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
-    $page  # return current page
-    foreach ($sub in $page.subPages) {
-        Get-WikiPages $sub.path  # recurse into children
-    }
-}
-```
-
-Leaves with `content.Length > 0` are content-rich pages. Leaves with `subPages.Count = 0` but `content.Length = 0` are empty pages (`no_content`).
-
-### Outcome-to-response mapping
-
-| Outcome | HTTP Status | Response Shape | Stan Action |
-|---|---|---|---|
-| `success` | 200 | Page JSON with `content.length > 0` | Use `content` as answer source |
-| `not_found` | 404 | No JSON body | State page not found, suggest refinement |
-| `no_content` | 200 | Page JSON with `content.length = 0`, no subPages | State page exists but empty, suggest adjacent topic |
-| `unavailable` | Connection error / timeout | N/A | State temporary unavailability, suggest retry |
-| `access_denied` | 401 / 403 | Error body | State restricted access, suggest requesting access |
-
-## Runtime Expectations
-
-- When users ask wiki-backed questions, responses should be derived from readable wiki content.
-- When users ask for source, response should mention Azure DevOps wiki source and page/path when available.
-- For follow-up prompts, use prior resolved page/topic context.
-
-## Validation References
-
-- Contract: [../../specs/002-read-devops-wiki/contracts/wiki-read-contract.md](../../specs/002-read-devops-wiki/contracts/wiki-read-contract.md)
-- Quickstart scenarios: [../../specs/002-read-devops-wiki/quickstart.md](../../specs/002-read-devops-wiki/quickstart.md)
-- Run log: [../../specs/002-read-devops-wiki/validation/quickstart-run.md](../../specs/002-read-devops-wiki/validation/quickstart-run.md)
-
-## Known Gaps
-
-- Access-denied validation requires a truly restricted page/account pair.
-- Source-citation behavior in Stan runtime must cite wiki source for wiki-backed answers.
+Full behavior guarantees (source anchoring, outcome matrix, error handling, follow-up rules) are defined in `specs/003-mcp-wiki-access/contracts/wiki-read-contract.md`.

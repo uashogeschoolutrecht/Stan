@@ -14,7 +14,7 @@ Keep responses concise, practical, and aligned with the quarterly strategy workf
 
 ## Wiki Read Capability
 
-Stan can answer questions using the **Data Science Pool Azure DevOps wiki** as a read-only source. Behavior contracts are defined in `specs/002-read-devops-wiki/contracts/wiki-read-contract.md`.
+Stan can answer questions using the **Data Science Pool Azure DevOps wiki** as a read-only source. Behavior contracts are defined in `specs/003-mcp-wiki-access/contracts/wiki-read-contract.md`.
 
 ### Wiki Source-Attribution Rules
 
