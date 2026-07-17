@@ -81,6 +81,12 @@ If the server does not appear, reload the VS Code window and open the MCP view a
 
 ## 4) Run a first-use check
 
+In VS Code, open the Copilot Chat view and run these prompts in the chat input:
+
+- Open Copilot Chat from the Activity Bar, or use Command Palette and run "Chat: Open Chat".
+- Start a new chat session.
+- If needed, select the Stan agent/mode in chat before sending prompts.
+
 Ask Stan these prompts:
 
 1. `What are the 7 sections of the quarterly strategy session?`
