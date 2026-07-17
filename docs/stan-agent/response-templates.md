@@ -51,3 +51,19 @@ Example:
 
 1. Keep response in English.
 2. Preserve requested in-scope content.
+
+## Wiki Content Retrieval Template
+
+Use when user asks for information from the Data Science Pool Azure DevOps wiki.
+
+1. Retrieve relevant wiki content for the requested topic or page.
+2. Provide a relevant answer derived from wiki content.
+3. When the user asks for source attribution, explicitly name **Data Science Pool Azure DevOps wiki** as the source (not `docs/strategy-playbook.md`).
+4. Include the resolved wiki page title/path in the source citation when available.
+5. For out-of-scope requests targeting non-wiki Azure DevOps areas, state the wiki-only scope limit and redirect to a wiki topic/page question.
+6. For unavailable content, state temporary unavailability and suggest retrying later.
+7. For restricted content, state access is restricted and suggest requesting access.
+8. Support follow-up questions using the most recently retrieved wiki page/context.
+
+Example:
+"According to the Data Science Pool Azure DevOps wiki (page: `/Handbook/Communication strategy`), the team uses ..."

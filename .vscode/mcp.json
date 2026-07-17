@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "ado-remote-mcp": {
+      "url": "https://mcp.dev.azure.com/HogeschoolUtrecht",
+      "type": "http"
+    }
+  }
+}

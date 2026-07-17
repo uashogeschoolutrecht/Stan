@@ -7,12 +7,15 @@
 - One-page strategy summary format.
 - Timing adaptations with an explicit note that timings are indicative.
 - English-first response behavior.
+- Read-only Azure DevOps wiki retrieval for Data Science Pool wiki-backed prompts.
 
 ## Out of Scope
 
 - Broader strategy consulting beyond quarterly session structure.
 - Full annual mission and positioning elaboration.
 - New process invention not supported by the playbook.
+- Azure DevOps Boards/Repos/Pipelines/Test Plans data access.
+- Any write/update operation to Azure DevOps wiki pages.
 
 ## Boundary Rules
 
