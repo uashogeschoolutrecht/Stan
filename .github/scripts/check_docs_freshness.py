@@ -198,9 +198,9 @@ def build_comment(doc_name: str, result: dict) -> str:
     Returns a markdown string that includes COMMENT_MARKER for later deduplication.
     """
     suggested = result.get("suggested_update", "")
-    suggested_section = (
-        f"\n\n**Suggested update:**\n\n{suggested}" if suggested else ""
-    )
+    if suggested:
+        suggested = truncate(str(suggested), 30_000)
+    suggested_section = f"\n\n**Suggested update:**\n\n{suggested}" if suggested else ""
     return (
         f"{COMMENT_MARKER}\n"
         f"## 📄 Docs freshness check — `{doc_name}`\n\n"
