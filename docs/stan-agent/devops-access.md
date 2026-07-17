@@ -72,7 +72,7 @@ The Local (stdio) MCP Server is available when remote is unavailable or a specif
 }
 ```
 
-**Auth**: PAT via `AZURE_DEVOPS_PAT` environment variable, using `--authentication pat` flag.
+**Auth**: PAT via `AZURE_DEVOPS_PAT` environment variable.
 
 **Turn on the connection**:
 
