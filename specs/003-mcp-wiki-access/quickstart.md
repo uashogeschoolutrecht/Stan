@@ -75,7 +75,7 @@
 2. Verify Stan returns a clear access-restricted message.
 3. Verify response suggests requesting access.
 4. Expected outcome:
-   - Meets `FR-007` and `SC-002`.
+   - Meets `FR-007` and `SC-003`.
 5. Simulation note:
    - Use a wiki page on a project the authenticated user does not have access to.
 
