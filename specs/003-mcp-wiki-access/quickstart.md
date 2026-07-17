@@ -118,7 +118,7 @@
 
 ## Exit Criteria
 
-- All nine scenarios pass.
+- All ten scenarios pass.
 - Error messages are deterministic for unavailable/restricted/not-found cases.
 - Existing quarterly strategy guidance remains intact.
 - No REST API wiki-read code or configuration remains in active documentation.
