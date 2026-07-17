@@ -71,7 +71,7 @@ Notes:
 ## 3) Start the MCP connection in VS Code
 
 - Save `.vscode/mcp.json`.
-- Open the MCP view in VS Code. (SHIFT+CMD+P → "MCP: List Servers")
+- Open the MCP view in VS Code. (Shift+Cmd+P / Ctrl+Shift+P → "MCP: List Servers")
 - Start or enable your server connection (`ado-remote-mcp` or `ado`).
 - If prompted, complete sign-in.
 - Confirm the connection status is connected by opening the MCP view again.
