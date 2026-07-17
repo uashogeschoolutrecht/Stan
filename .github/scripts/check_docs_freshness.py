@@ -78,11 +78,15 @@ def call_models_api(prompt: str) -> dict | None:
         )
         return None
 
-    raw = resp.json()["choices"][0]["message"]["content"]
     try:
+        data = resp.json()
+        raw = data["choices"][0]["message"]["content"]
         return json.loads(raw)
-    except json.JSONDecodeError as exc:
-        print(f"  JSON parse error: {exc}\nRaw: {raw[:300]}", file=sys.stderr)
+    except (ValueError, KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        print(
+            f"  Response parse error: {exc}\nRaw: {resp.text[:300]}",
+            file=sys.stderr,
+        )
         return None
 
 
