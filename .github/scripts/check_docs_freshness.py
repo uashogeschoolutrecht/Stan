@@ -41,6 +41,7 @@ COMMENT_MARKER = "<!-- docs-freshness-check -->"
 
 
 def read_file(path: str) -> str | None:
+    """Read a file from disk and return its contents, or None if not found."""
     try:
         with open(path, encoding="utf-8") as fh:
             return fh.read()
@@ -86,6 +87,15 @@ def call_models_api(prompt: str) -> dict | None:
 
 
 def check_doc(doc_name: str, doc_content: str, pr_diff: str) -> dict | None:
+    """Ask the AI whether *doc_name* needs updating given the PR diff.
+
+    Returns a dict with keys:
+        needs_update (bool): whether the file is outdated.
+        reason (str): one-sentence explanation.
+        suggested_update (str, optional): replacement content or patch description
+            (only present when needs_update is True).
+    Returns None if the API call fails or the response cannot be parsed.
+    """
     prompt = f"""You are a documentation reviewer. A pull request has been opened in a GitHub repository.
 Your job is to decide whether the file `{doc_name}` needs to be updated as a result of the changes in this PR.
 
@@ -116,7 +126,11 @@ Respond with valid JSON only — no markdown fences around it:
 
 
 def get_existing_bot_comments() -> list[dict]:
-    """Return all bot comments on this PR that carry our marker."""
+    """Return all PR comments posted by this action (identified by COMMENT_MARKER).
+
+    Each item is a GitHub API comment object containing at least 'id' and 'body'.
+    Returns an empty list if the request fails or no matching comments exist.
+    """
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -164,6 +178,15 @@ def post_comment(body: str) -> None:
 
 
 def build_comment(doc_name: str, result: dict) -> str:
+    """Build a markdown PR comment body for a file that needs updating.
+
+    Args:
+        doc_name: filename (e.g. "README.md").
+        result: dict from check_doc with keys 'reason' (str) and optionally
+                'suggested_update' (str) when needs_update is True.
+
+    Returns a markdown string that includes COMMENT_MARKER for later deduplication.
+    """
     suggested = result.get("suggested_update", "")
     suggested_section = (
         f"\n\n**Suggested update:**\n\n{suggested}" if suggested else ""
